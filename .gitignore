@@ -16,3 +16,4 @@ CMakeUserPresets.json
 
 # Ignore IDE Folders
 .vs/
+.vscode/
