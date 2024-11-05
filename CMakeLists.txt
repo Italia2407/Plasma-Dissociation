@@ -7,4 +7,4 @@ set(SOURCES )
 set(HEADERS )
 
 add_executable(Plasma-Dissociation "src/main.cpp" ${SOURCES} ${HEADERS})
-target_include_directories(Plasma-Dissociation PUBLIC libs/nlohmann-json)
+target_include_directories(Plasma-Dissociation PRIVATE "libs/tomlplusplus/include")

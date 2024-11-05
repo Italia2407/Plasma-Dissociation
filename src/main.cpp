@@ -1,17 +1,15 @@
 #include <iostream>
 #include <fstream>
 
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
+#include <toml++/toml.hpp>
 
 int main()
 {
+    auto testFile = toml::parse_file("../assets/Molecule-Tests/CH4.toml");
+
     std::cout << "Hello World" << std::endl;
 
-    std::fstream input("../inputs/test.json");
-    json data = json::parse(input);
-
-    std::cout << "The tested molecule is " << data["run"]["Molecule"] << std::endl;
+    std::cout << "The tested molecule is " << testFile["Run"]["Molecule"].value_or("") << std::endl;
 
     return 0;
 }

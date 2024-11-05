@@ -1,0 +1,24 @@
+[Setup]
+RunFolder = 'Methane-Test'
+Cores = 8
+
+Repetitions = 2
+Restart = true
+
+InitRE = false
+
+# Can be in any Order and Spacing, might be good idea to organise them in such a way it is clear where each option would be found
+[Run]
+GeomFLG = true
+Molecule = 'Methane'
+States = 1
+Multiplicity = 3
+Temperature = 1000
+CutOff = 1
+Branches = 0
+Timestep = 10
+NumTimesteps = 2500
+GeomStart = true
+SpinFlip = false
+Method = "QChem"
+GPU = false
