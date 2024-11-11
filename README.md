@@ -2,7 +2,6 @@
 
 ## Code Compilation
 Creating and Initialising the Build Folder.
-
 ```bash
 mkdir build
 cd build
