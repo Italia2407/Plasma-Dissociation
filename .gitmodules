@@ -1,3 +1,6 @@
 [submodule "libs/tomlplusplus"]
 	path = libs/tomlplusplus
 	url = https://github.com/marzer/tomlplusplus.git
+[submodule "libs/fmt-11.0.2"]
+	path = libs/fmt-11.0.2
+	url = https://github.com/fmtlib/fmt.git

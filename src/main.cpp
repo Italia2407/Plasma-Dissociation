@@ -1,5 +1,5 @@
 #include <iostream>
-#include <fstream>
+#include <fmt/format.h>
 
 #include <toml++/toml.hpp>
 
@@ -8,34 +8,36 @@ namespace po = boost::program_options;
 
 int main(int argc, char *argv[])
 {
-    auto testFile = toml::parse_file("../assets/Molecule-Tests/CH4.toml");
+    // Create Command Line Options
+    po::options_description optionsDescription("Program Options");
+    optionsDescription.add_options()
+        ("help", "Produce a Help Message")
+        ("input-files", po::value<std::vector<std::string>>(), "Tested Input Files");
+    // Create Positional Options
+    po::positional_options_description positionalOptionsDescription;
+    positionalOptionsDescription.add("input-files", -1);
 
-    std::cout << "Hello World" << std::endl;
+    // Create Variable Map
+    po::variables_map variableMap;
+    po::store(po::command_line_parser(argc, argv).options(optionsDescription).positional(positionalOptionsDescription).run(), variableMap);
+    po::notify(variableMap);
 
-    std::cout << "The tested molecule is " << testFile["Run"]["Molecule"].value_or("") << std::endl;
-
-    // Declare the supported options.
-    po::options_description desc("Allowed options");
-    desc.add_options()
-        ("help", "produce help message")
-        ("compression", po::value<int>(), "set compression level")
-    ;
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);    
-
-    if (vm.count("help")) {
-        std::cout << desc << "\n";
+    // Print CLI Help Message
+    if (variableMap.count("help")) {
+        std::cout << optionsDescription << std::endl;
         return 1;
     }
 
-    if (vm.count("compression")) {
-        std::cout << "Compression level was set to " 
-    << vm["compression"].as<int>() << ".\n";
-    } else {
-        std::cout << "Compression level was not set.\n";
+    // Ensure Input Files have been Passed
+    if (variableMap.count("input-files") == 0) {
+        std::cerr << "ERROR: At least one Input File is Required" << std::endl;
+        return 0;
     }
 
-    return 0;
+    auto test = variableMap["input-files"].as<std::vector<std::string>>()[0];
+    std::string filePath = fmt::format("{0}/Molecule-Tests/{1}", ASSETS_PATH, variableMap["input-files"].as<std::vector<std::string>>()[0]);
+    auto testFile = toml::parse_file(filePath);
+    std::cout << "The tested molecule is " << testFile["Run"]["Molecule"].value_or("") << std::endl;
+
+    return 1;
 }

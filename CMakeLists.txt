@@ -1,14 +1,20 @@
 cmake_minimum_required(VERSION 3.12)
 
-project("Plasma-Dissociation")
-set(CMAKE_CXX_STANDARD 17)
+project("Plasma-Dissociation" LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+
+#  Retrieve Boost Libraries
+include_directories(${Boost_INCLUDE_DIRS})
+find_package(Boost 1.74 REQUIRED COMPONENTS date_time program_options)
+
+# 
+add_subdirectory("libs/fmt-11.0.2")
 
 set(SOURCES )
 set(HEADERS )
 
 add_executable(Plasma-Dissociation "src/main.cpp" ${SOURCES} ${HEADERS})
-target_include_directories(Plasma-Dissociation PRIVATE "libs/tomlplusplus/include")
+target_compile_definitions(Plasma-Dissociation PRIVATE ASSETS_PATH="../assets")
 
-#  
-find_package(Boost 1.74 REQUIRED COMPONENTS date_time program_options)
-target_link_libraries(Plasma-Dissociation PRIVATE Boost::date_time Boost::program_options)
+target_include_directories(Plasma-Dissociation PRIVATE "libs/tomlplusplus/include")
+target_link_libraries(Plasma-Dissociation PRIVATE Boost::date_time Boost::program_options fmt::fmt)
