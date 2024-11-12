@@ -13,6 +13,7 @@ CMakeUserPresets.json
 
 # Ignore Build Directories
 [bB]uild/
+[oO]ut/
 
 # Ignore IDE Folders
 .vs/

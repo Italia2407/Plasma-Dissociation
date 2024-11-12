@@ -2,7 +2,7 @@
 RunFolder = 'Methane-Test'
 Cores = 8
 
-Repetitions = 2
+Repetitions = 1
 Restart = true
 
 InitRE = false

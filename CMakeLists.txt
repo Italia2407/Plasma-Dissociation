@@ -14,7 +14,7 @@ set(SOURCES )
 set(HEADERS )
 
 add_executable(Plasma-Dissociation "src/main.cpp" ${SOURCES} ${HEADERS})
-target_compile_definitions(Plasma-Dissociation PRIVATE ASSETS_PATH="../assets")
+target_compile_definitions(Plasma-Dissociation PRIVATE ASSETS_PATH="${CMAKE_SOURCE_DIR}/assets" MAX_CORES=8)
 
 target_include_directories(Plasma-Dissociation PRIVATE "libs/tomlplusplus/include")
 target_link_libraries(Plasma-Dissociation PRIVATE Boost::date_time Boost::program_options fmt::fmt)
