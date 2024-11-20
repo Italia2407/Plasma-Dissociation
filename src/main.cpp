@@ -21,33 +21,33 @@ bool argumentValidator(toml::v3::ex::parse_result a_inputFile)
 {
     bool argCheck = true;
 
-    // Check if Value of Repetitions is Valid
-    if (a_inputFile["Setup"]["Repetitions"].type() != toml::v3::node_type::integer) {
-        std::cerr << "ERROR: Setup.Repetitions must be an Integer" << std::endl;
+    // Check if Value of Trajectories is Valid
+    if (a_inputFile["InitConditions"]["NumTrajectories"].type() != toml::v3::node_type::integer) {
+        std::cerr << "ERROR: InitConditions.NumTrajectories must be an Integer" << std::endl;
         argCheck = false;
     }
-    else if (a_inputFile["Setup"]["Repetitions"].value_or(0) < 1) {
-        std::cerr << "ERROR: Number of Repetitions must be at least 1" << std::endl;
-        argCheck = false;
-    }
-
-    // Check if Value of Cores is Valid
-    if (a_inputFile["Setup"]["Cores"].type() != toml::v3::node_type::integer) {
-        std::cerr << "ERROR: Setup.Cores must be an Integer" << std::endl;
-        argCheck = false;
-    }
-    else if (a_inputFile["Setup"]["Cores"].value_or(0) < 1) {
-        std::cerr << "ERROR: Number of Cores Selected must be at least 1" << std::endl;
-        argCheck = false;
-    }
-    else if (a_inputFile["Setup"]["Cores"].value_or(0) > MAX_CORES) {
-        std::cerr << fmt::format("ERROR: Maximum Number of Cores available is {0}", MAX_CORES) << std::endl;
+    else if (a_inputFile["InitConditions"]["NumTrajectories"].value_or(0) < 1) {
+        std::cerr << "ERROR: Number of Trajectories must be at least 1" << std::endl;
         argCheck = false;
     }
 
-    // Check if GeomFLG Value is Valid
-    if (a_inputFile["Run"]["GeomFLG"].type() != toml::v3::node_type::boolean) {
-        std::cerr << "ERROR: Run.GeomFLG must be a Boolean" << std::endl;
+    // Check if Value of CPUs is Valid
+    if (a_inputFile["HPCSetup"]["NumCPUs"].type() != toml::v3::node_type::integer) {
+        std::cerr << "ERROR: HPCSetup.NumCPUs must be an Integer" << std::endl;
+        argCheck = false;
+    }
+    else if (a_inputFile["HPCSetup"]["NumCPUs"].value_or(0) < 1) {
+        std::cerr << "ERROR: Number of CPUs Selected must be at least 1" << std::endl;
+        argCheck = false;
+    }
+    else if (a_inputFile["HPCSetup"]["NumCPUs"].value_or(0) > MAX_CORES) {
+        std::cerr << fmt::format("ERROR: Maximum Number of CPUs available is {0}", MAX_CORES) << std::endl;
+        argCheck = false;
+    }
+
+    // Check if CreateGeometry Flag is Valid
+    if (a_inputFile["Molecule"]["CreateGeometry"].type() != toml::v3::node_type::boolean) {
+        std::cerr << "ERROR: Molecule.CreateGeometry must be a Boolean" << std::endl;
         argCheck = false;
     }
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     // Validate Arguments from Input File
     if (!argumentValidator(inputFile))
         return 0;
-    std::cout << "Tested Molecule: " << inputFile["Run"]["Molecule"].value_or("") << std::endl;
+    std::cout << "Tested Molecule: " << inputFile["Molecule"]["Name"].value_or("") << std::endl;
 
     // Check if Running on HPC Server
     char hostName[HOST_NAME_MAX];  gethostname(hostName, HOST_NAME_MAX);
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         fs::create_directory(execDir);
 
     // Create RunFolder
-    fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir.path().string(), inputFile["Setup"]["RunFolder"].value_or("default")));
+    fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir.path().string(), inputFile["HPCSetup"]["RunFolder"].value_or("default")));
     if (runFolder.is_directory())
     {
         // Check if Existing RunFolder should be Deleted

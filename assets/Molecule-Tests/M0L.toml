@@ -1,0 +1,25 @@
+[HPCSetup]
+RunFolder = 'M0L-Test'
+
+NumCPUs = 8
+UseGPU = false
+
+MaxHours = 16.0
+
+[Molecule]
+Name = "Hydrogen"
+
+CreateGeometry = true
+GeometryStartingIndex = 0 # Used only when CreateGeometry is false
+
+[InitConditions]
+Multiplicity = 3
+Temperature = 1000.0 # Temeprature is in Kelvin Degrees
+
+NumBranches = 0
+NumStates = 1
+NumTrajectories = 2
+
+[Timestep]
+Duration = 10
+Count = 2500
