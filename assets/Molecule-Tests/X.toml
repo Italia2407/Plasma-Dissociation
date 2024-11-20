@@ -3,6 +3,10 @@ RunFolder = 'X-Test'
 
 NumCPUs = 8
 NumBranches = 0
+NumRepetitions = 1
+
+Restart = true
+InitRE = false
 
 [Timestep]
 Duration = 10

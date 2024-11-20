@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         fs::create_directory(execDir);
 
     // Create RunFolder
-    fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir, inputFile["Setup"]["RunFolder"].value_or("default")));
+    fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir.path().string(), inputFile["Setup"]["RunFolder"].value_or("default")));
     if (runFolder.is_directory())
     {
         // Check if Existing RunFolder should be Deleted
