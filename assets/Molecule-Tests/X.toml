@@ -1,0 +1,9 @@
+#[]
+RunFolder = 'X-Test'
+
+NumCPUs = 8
+NumBranches = 0
+
+[Timestep]
+Duration = 10
+Count = 2500

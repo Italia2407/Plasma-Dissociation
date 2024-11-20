@@ -9,7 +9,50 @@ namespace po = boost::program_options;
 #include <unistd.h>
 #include <limits.h>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #include <regex>
+
+/// @brief 
+/// @param a_inputFile 
+/// @return 
+bool argumentValidator(toml::v3::ex::parse_result a_inputFile)
+{
+    bool argCheck = true;
+
+    // Check if Value of Repetitions is Valid
+    if (a_inputFile["Setup"]["Repetitions"].type() != toml::v3::node_type::integer) {
+        std::cerr << "ERROR: Setup.Repetitions must be an Integer" << std::endl;
+        argCheck = false;
+    }
+    else if (a_inputFile["Setup"]["Repetitions"].value_or(0) < 1) {
+        std::cerr << "ERROR: Number of Repetitions must be at least 1" << std::endl;
+        argCheck = false;
+    }
+
+    // Check if Value of Cores is Valid
+    if (a_inputFile["Setup"]["Cores"].type() != toml::v3::node_type::integer) {
+        std::cerr << "ERROR: Setup.Cores must be an Integer" << std::endl;
+        argCheck = false;
+    }
+    else if (a_inputFile["Setup"]["Cores"].value_or(0) < 1) {
+        std::cerr << "ERROR: Number of Cores Selected must be at least 1" << std::endl;
+        argCheck = false;
+    }
+    else if (a_inputFile["Setup"]["Cores"].value_or(0) > MAX_CORES) {
+        std::cerr << fmt::format("ERROR: Maximum Number of Cores available is {0}", MAX_CORES) << std::endl;
+        argCheck = false;
+    }
+
+    // Check if GeomFLG Value is Valid
+    if (a_inputFile["Run"]["GeomFLG"].type() != toml::v3::node_type::boolean) {
+        std::cerr << "ERROR: Run.GeomFLG must be a Boolean" << std::endl;
+        argCheck = false;
+    }
+
+    return argCheck;
+}
 
 int main(int argc, char *argv[])
 {
@@ -47,48 +90,41 @@ int main(int argc, char *argv[])
     }
     catch(const toml::parse_error& error) {
         std::cerr << error.what() << std::endl;
-        std::cerr << "ERROR Occurred" << std::endl;
         return 0;
     }
 
-    // Check Basic Arguments
-    bool argCheck = true;
-
-    if (inputFile["Setup"]["Repetitions"].type() != toml::v3::node_type::integer) {
-        std::cerr << "ERROR: Setup.Repetitions must be an Integer" << std::endl;
-        argCheck = false;
-    }
-    else if (inputFile["Setup"]["Repetitions"].value_or(0) < 1) {
-        std::cerr << "ERROR: Number of Repetitions must be at least 1" << std::endl;
-        argCheck = false;
-    }
-
-    if (inputFile["Setup"]["Cores"].type() != toml::v3::node_type::integer) {
-        std::cerr << "ERROR: Setup.Cores must be an Integer" << std::endl;
-        return 0;
-    }
-    else if (inputFile["Setup"]["Cores"].value_or(0) < 1) {
-        std::cerr << "ERROR: Number of Cores Selected must be at least 1" << std::endl;
-        argCheck = false;
-    }
-    else if (inputFile["Setup"]["Cores"].value_or(0) > MAX_CORES) {
-        std::cerr << fmt::format("ERROR: Maximum Number of Cores available is {0}", MAX_CORES) << std::endl;
-        argCheck = false;
-    }
-
-    if (inputFile["Run"]["GeomFLG"].type() != toml::v3::node_type::boolean) {
-        std::cerr << "ERROR: Run.GeomFLG must be a Boolean" << std::endl;
-        argCheck = false;
-    }
-
-    // 
-    if (!argCheck)
+    // Validate Arguments from Input File
+    if (!argumentValidator(inputFile))
         return 0;
     std::cout << "Tested Molecule: " << inputFile["Run"]["Molecule"].value_or("") << std::endl;
 
     // Check if Running on HPC Server
-    char hostName[HOST_NAME_MAX]; gethostname(hostName, HOST_NAME_MAX);
+    char hostName[HOST_NAME_MAX];  gethostname(hostName, HOST_NAME_MAX);
+    char userName[LOGIN_NAME_MAX]; getlogin_r(userName, LOGIN_NAME_MAX);
+
     bool HPCFlag = std::regex_match(hostName, std::regex("login(1|2).arc(3|4).leeds.ac.uk"));
+
+    // Create Execution Directory
+    fs::directory_entry execDir(HPCFlag ? fmt::format("/nobackup/{0}/Plasma-Dissociation-Results", userName) : "../../results");
+    if (!execDir.is_directory())
+        fs::create_directory(execDir);
+
+    // Create RunFolder
+    fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir, inputFile["Setup"]["RunFolder"].value_or("default")));
+    if (runFolder.is_directory())
+    {
+        // Check if Existing RunFolder should be Deleted
+        std::cout << "Run Folder already Exists. Do you want to delete it? (Y/n): ";
+        std::string cliInput; std::getline(std::cin, cliInput);
+
+        if (cliInput == "Y" || cliInput == "y")
+            fs::remove(runFolder);
+        else
+        {
+            std::cerr << "ERROR: RunFolder already Exists. Change the RunFolder Name or delete/move it" << std::endl;
+            return 0;
+        }
+    }
 
     std::cout << hostName << std::endl;
 
