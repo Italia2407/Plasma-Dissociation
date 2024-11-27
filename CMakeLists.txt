@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 #  Retrieve Boost Libraries
 include_directories(${Boost_INCLUDE_DIRS})
-find_package(Boost 1.74 REQUIRED COMPONENTS date_time program_options)
+find_package(Boost 1.67 REQUIRED COMPONENTS date_time program_options)
 
 # 
 add_subdirectory("libs/fmt-11.0.2")
