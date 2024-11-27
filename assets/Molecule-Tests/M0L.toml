@@ -7,19 +7,19 @@ UseGPU = false
 MaxHours = 16.0
 
 [Molecule]
-Name = "Hydrogen"
+Name = "Molecule"
 
 CreateGeometry = true
 GeometryStartingIndex = 0 # Used only when CreateGeometry is false
 
-[InitConditions]
+[Computation]
+Method = "QChem"
+
 Multiplicity = 3
 Temperature = 1000.0 # Temeprature is in Kelvin Degrees
+TimestepDuration = 10.0
 
 NumBranches = 0
 NumStates = 1
 NumTrajectories = 2
-
-[Timestep]
-Duration = 10
-Count = 2500
+NumTimesteps = 2500

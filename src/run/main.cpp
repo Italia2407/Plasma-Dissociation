@@ -1,11 +1,6 @@
 #include <iostream>
 #include <fmt/format.h>
 
-#include <toml++/toml.hpp>
-
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
-
 #include <unistd.h>
 #include <limits.h>
 
@@ -13,6 +8,8 @@ namespace po = boost::program_options;
 namespace fs = std::filesystem;
 
 #include <regex>
+
+#include "../InputParser.hpp"
 
 /// @brief 
 /// @param a_inputFile 
@@ -56,47 +53,22 @@ bool argumentValidator(toml::v3::ex::parse_result a_inputFile)
 
 int main(int argc, char *argv[])
 {
-    // Create Command Line Options
-    po::options_description optionsDescription("Program Options");
-    optionsDescription.add_options()
-        ("help", "Produce a Help Message")
-        ("input-files", po::value<std::vector<std::string>>(), "Tested Input Files");
-    // Create Positional Options
-    po::positional_options_description positionalOptionsDescription;
-    positionalOptionsDescription.add("input-files", -1);
+    // Initialise File Parser
+    InputParser inputParser(argc, argv);
+    if (inputParser.PrintHelpMessage())
+        return 0;
 
-    // Create Variable Map
-    po::variables_map variableMap;
-    po::store(po::command_line_parser(argc, argv).options(optionsDescription).positional(positionalOptionsDescription).run(), variableMap);
-    po::notify(variableMap);
+    // Ensure File Parsing is Successful
+    if (!inputParser.ParseInputFiles())
+        return 0;
 
-    // Print CLI Help Message
-    if (variableMap.count("help")) {
-        std::cout << optionsDescription << std::endl;
-        return 1;
-    }
-
-    // Ensure Input Files have been Passed
-    if (variableMap.count("input-files") == 0) {
-        std::cerr << "ERROR: At least one Input File is Required" << std::endl;
+    // Retrieve First Parsed File
+    if (!inputParser.GetInputFile(0).has_value()) {
+        std::cerr << "ERROR: Could not Retrieve Input File 0" << std::endl;
         return 0;
     }
-
-    // Parse Inputted TOML File
-    toml::v3::ex::parse_result inputFile;
-    try {
-        std::string filePath = fmt::format("{0}/Molecule-Tests/{1}", ASSETS_PATH, variableMap["input-files"].as<std::vector<std::string>>()[0]);
-        inputFile = toml::parse_file(filePath);
-    }
-    catch(const toml::parse_error& error) {
-        std::cerr << error.what() << std::endl;
-        return 0;
-    }
-
-    // Validate Arguments from Input File
-    if (!argumentValidator(inputFile))
-        return 0;
-    std::cout << "Tested Molecule: " << inputFile["Molecule"]["Name"].value_or("") << std::endl;
+    InputFile inputFile = inputParser.GetInputFile(0).value();
+    std::cout << "Tested Molecule: " << inputFile.MoleculeName << std::endl;
 
     // Check if Running on HPC Server
     char hostName[HOST_NAME_MAX];  gethostname(hostName, HOST_NAME_MAX);
@@ -110,17 +82,15 @@ int main(int argc, char *argv[])
         fs::create_directory(execDir);
 
     // Create RunFolder
-    fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir.path().string(), inputFile["HPCSetup"]["RunFolder"].value_or("default")));
-    if (runFolder.is_directory())
-    {
+    fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir.path().string(), inputFile.RunFolder));
+    if (runFolder.is_directory()) {
         // Check if Existing RunFolder should be Deleted
         std::cout << "Run Folder already Exists. Do you want to delete it? (Y/n): ";
         std::string cliInput; std::getline(std::cin, cliInput);
 
         if (cliInput == "Y" || cliInput == "y")
             fs::remove(runFolder);
-        else
-        {
+        else {
             std::cerr << "ERROR: RunFolder already Exists. Change the RunFolder Name or delete/move it" << std::endl;
             return 0;
         }
