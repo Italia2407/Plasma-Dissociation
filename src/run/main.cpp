@@ -81,7 +81,6 @@ int main(int argc, char *argv[])
     if (!execDir.is_directory())
         fs::create_directory(execDir);
 
-    // Create RunFolder
     fs::directory_entry runFolder(fmt::format("{0}/{1}", execDir.path().string(), inputFile.RunFolder));
     if (runFolder.is_directory()) {
         // Check if Existing RunFolder should be Deleted
@@ -96,7 +95,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    std::cout << hostName << std::endl;
+    // Create the RunFolder
+    fs::create_directory(runFolder);
 
     return 1;
 }
