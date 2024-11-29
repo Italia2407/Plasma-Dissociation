@@ -30,3 +30,10 @@ target_compile_definitions(Create-Geometry PRIVATE ASSETS_PATH="${ASSETS_PATH}" 
 
 target_include_directories(Create-Geometry PRIVATE "libs/tomlplusplus/include")
 target_link_libraries(Create-Geometry PRIVATE Boost::date_time Boost::program_options fmt::fmt)
+
+# QChem Executable
+add_executable(Run-QChem "src/RunQChem.cpp" ${INPUT_FILE_FILES})
+target_compile_definitions(Run-QChem PRIVATE ASSETS_PATH="${ASSETS_PATH}" RESULTS_PATH="${RESULTS_PATH}" MAX_CORES=8)
+
+target_include_directories(Run-QChem PRIVATE "libs/tomlplusplus/include")
+target_link_libraries(Run-QChem PRIVATE Boost::date_time Boost::program_options fmt::fmt)
