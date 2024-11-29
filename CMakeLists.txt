@@ -10,11 +10,23 @@ find_package(Boost 1.67 REQUIRED COMPONENTS date_time program_options)
 # 
 add_subdirectory("libs/fmt-11.0.2")
 
-set(RUN_SOURCES "src/InputParser.cpp")
-set(RUN_HEADERS "src/InputParser.hpp")
+# 
+set(ASSETS_PATH "${CMAKE_SOURCE_DIR}/assets")
+set(RESULTS_PATH "${CMAKE_SOURCE_DIR}/out/results")
 
-add_executable(Plasma-Dissociation "src/run/main.cpp" ${RUN_SOURCES} ${RUN_HEADERS})
-target_compile_definitions(Plasma-Dissociation PRIVATE ASSETS_PATH="${CMAKE_SOURCE_DIR}/assets" MAX_CORES=8)
+# Source Code 
+set(INPUT_FILE_FILES "src/IOManagers/InputFile.hpp" "src/IOManagers/InputFile.cpp")
+
+# Primary Run Executable
+add_executable(Plasma-Dissociation "src/PlasmaDissociation.cpp" ${INPUT_FILE_FILES})
+target_compile_definitions(Plasma-Dissociation PRIVATE ASSETS_PATH="${ASSETS_PATH}" RESULTS_PATH="${RESULTS_PATH}" MAX_CORES=8)
 
 target_include_directories(Plasma-Dissociation PRIVATE "libs/tomlplusplus/include")
 target_link_libraries(Plasma-Dissociation PRIVATE Boost::date_time Boost::program_options fmt::fmt)
+
+# Geometry Creation Executable
+add_executable(Create-Geometry "src/CreateGeometry.cpp" ${INPUT_FILE_FILES})
+target_compile_definitions(Create-Geometry PRIVATE ASSETS_PATH="${ASSETS_PATH}" RESULTS_PATH="${RESULTS_PATH}" MAX_CORES=8)
+
+target_include_directories(Create-Geometry PRIVATE "libs/tomlplusplus/include")
+target_link_libraries(Create-Geometry PRIVATE Boost::date_time Boost::program_options fmt::fmt)

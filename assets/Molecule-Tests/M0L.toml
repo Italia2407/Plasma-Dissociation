@@ -1,5 +1,5 @@
 [HPCSetup]
-RunFolder = 'M0L-Test'
+RunFolder = "M0L-Test" # Name of the Folder used to Hold Processed Data
 
 NumCPUs = 8
 UseGPU = false
