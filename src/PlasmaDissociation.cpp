@@ -9,7 +9,7 @@ namespace po = boost::program_options;
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include "IOManagers/InputFile.hpp"
+#include "IOManagers/MoleculeTest.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -41,33 +41,28 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // Initialise InputFiles
+    // Initialise Molecule Tests
     if (variablesMap.count("input-files") < 1) {
         std::cerr << "ERROR: At least one Input File must be Provided" << std::endl;
         return 0;
     }
 
-    std::vector<InputFile> inputFiles;
-    for (auto inputFileName : variablesMap["input-files"].as<std::vector<std::string>>()) {
-        try {
-            InputFile inputFile(inputFileName);
-            inputFiles.push_back(inputFile);
-        }
-        catch (std::exception& e) {
-            std::cout << e.what() << std::endl;
-        }
+    std::vector<MoleculeTest> moleculeTests;
+    for (auto inputFile : variablesMap["input-files"].as<std::vector<std::string>>()) {
+        auto moleculeTest = MoleculeTest::CreateFromTOMLFile(inputFile);
+        if (moleculeTest)
+            moleculeTests.push_back(moleculeTest.value());
     }
 
     // Ensure at least one File was Parsed Correctly
-    if (inputFiles.size() < 1)
+    if (moleculeTests.size() < 1)
         return 0;
 
-    // TOD: Add User Confirmation for Continuing with not all Files Correctly Parsed
-
-    std::cout << "Tested Molecule: " << inputFiles[0].MoleculeName() << std::endl;
+    // TODO: Add User Confirmation for Continuing with not all Files Correctly Parsed
+    std::cout << "Tested Molecule: " << moleculeTests[0].MoleculeName << std::endl;
 
     // Get Results Folder Path
-    fs::directory_entry runFolder(fmt::format("{0}/{1}", RESULTS_PATH, inputFiles[0].RunFolderPath()));
+    fs::directory_entry runFolder(fmt::format("{0}/{1}", RESULTS_PATH, moleculeTests[0].GetRunFolderPath()));
 
     if (runFolder.is_directory()) {
         // Check if Existing RunFolder should be Deleted

@@ -15,24 +15,24 @@ set(ASSETS_PATH "${CMAKE_SOURCE_DIR}/assets")
 set(RESULTS_PATH "${CMAKE_SOURCE_DIR}/out/results")
 
 # Source Code 
-set(INPUT_FILE_FILES "src/IOManagers/InputFile.hpp" "src/IOManagers/InputFile.cpp")
+set(MOLECULE_TEST_FILES "src/IOManagers/MoleculeTest.hpp" "src/IOManagers/MoleculeTest.cpp")
 
 # Primary Run Executable
-add_executable(Plasma-Dissociation "src/PlasmaDissociation.cpp" ${INPUT_FILE_FILES})
+add_executable(Plasma-Dissociation "src/PlasmaDissociation.cpp" ${MOLECULE_TEST_FILES})
 target_compile_definitions(Plasma-Dissociation PRIVATE ASSETS_PATH="${ASSETS_PATH}" RESULTS_PATH="${RESULTS_PATH}" MAX_CORES=8)
 
 target_include_directories(Plasma-Dissociation PRIVATE "libs/tomlplusplus/include")
 target_link_libraries(Plasma-Dissociation PRIVATE Boost::date_time Boost::program_options fmt::fmt)
 
 # Geometry Creation Executable
-add_executable(Create-Geometry "src/CreateGeometry.cpp" ${INPUT_FILE_FILES})
+add_executable(Create-Geometry "src/CreateGeometry.cpp" ${MOLECULE_TEST_FILES})
 target_compile_definitions(Create-Geometry PRIVATE ASSETS_PATH="${ASSETS_PATH}" RESULTS_PATH="${RESULTS_PATH}" MAX_CORES=8)
 
 target_include_directories(Create-Geometry PRIVATE "libs/tomlplusplus/include")
 target_link_libraries(Create-Geometry PRIVATE Boost::date_time Boost::program_options fmt::fmt)
 
 # QChem Executable
-add_executable(Run-QChem "src/RunQChem.cpp" ${INPUT_FILE_FILES})
+add_executable(Run-QChem "src/RunQChem.cpp" ${MOLECULE_TEST_FILES})
 target_compile_definitions(Run-QChem PRIVATE ASSETS_PATH="${ASSETS_PATH}" RESULTS_PATH="${RESULTS_PATH}" MAX_CORES=8)
 
 target_include_directories(Run-QChem PRIVATE "libs/tomlplusplus/include")

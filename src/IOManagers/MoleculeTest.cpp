@@ -1,4 +1,4 @@
-#include "InputFile.hpp"
+#include "MoleculeTest.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -8,23 +8,36 @@
 #include <fmt/format.h>
 #include <toml++/toml.hpp>
 
+/// @brief Retrieve the Full Path of the RunFolder
+std::string MoleculeTest::GetRunFolderPath() const
+{
+    return fmt::format("{0}/{1}", RESULTS_PATH, RunFolderName); 
+}
+
+/// @brief Check wether the Values of the Molecule Test are Valid
+bool MoleculeTest::AreValuesValid() const
+{
+    // TODO: Implement actual Checks
+    return true;
+}
+
 /// @brief 
-/// @param a_fileName 
-InputFile::InputFile(std::string a_fileName)
+/// @param a_fileName The Name of the TOML File to be Parsed
+/// @return The Created MoleculeTest Object, if Successful
+std::optional<MoleculeTest> MoleculeTest::CreateFromTOMLFile(std::string a_fileName)
 {
     std::string filePath = fmt::format("{0}/Molecule-Tests/{1}", ASSETS_PATH, a_fileName);
 
-    // Parse the TOML File
+    // Ensure TOML File Can be Parsed Correctly
     toml::v3::ex::parse_result parsedFile;
     try {
         parsedFile = toml::parse_file(filePath); 
     }
-    catch(const toml::parse_error& e) {
-        std::stringstream errorMessage;
-        errorMessage << fmt::format("ERROR: Failed to Parse {0}", a_fileName) << '\n';
-        errorMessage << '\t' << e.what();
+    catch (const toml::parse_error& e) {
+        std::cerr << fmt::format("ERROR: Failed to Parse {0}", a_fileName) << std::endl;
+        std::cerr << '\t' << e.what() << std::endl;
 
-        throw std::runtime_error(errorMessage.str());
+        return {};
     }
 
     // TODO: Argument is not Good name, find a more suitable one instead
@@ -55,7 +68,11 @@ InputFile::InputFile(std::string a_fileName)
         else if (a_expectedType == toml::v3::node_type::boolean)
             expectedTypeName = "Boolean";
 
-        validationErrors << '\t' << fmt::format("{0} must be of type {1}", a_argumentName, expectedTypeName) << '\n';
+        // Only Add New Line if not First Failed Validation
+        if (!argumentsValidated)
+            validationErrors << '\n';
+
+        validationErrors << '\t' << fmt::format("{0} must be of type {1}", a_argumentName, expectedTypeName);
         argumentsValidated = false;
     };
 
@@ -83,43 +100,38 @@ InputFile::InputFile(std::string a_fileName)
     validateArgumentType("Computation.NumTimesteps", toml::v3::node_type::integer);
 
     if (!argumentsValidated) {
-        std::stringstream errorMessage;
-        errorMessage << fmt::format("ERROR: Failed to Parse {0}", a_fileName) << '\n';
-        errorMessage << validationErrors.str();
+        std::cerr << fmt::format("ERROR: Failed to Parse {0}", a_fileName) << std::endl;
+        std::cerr << validationErrors.str() << std::endl;
 
-        throw std::runtime_error(errorMessage.str());
+        return {};
     }
 
-    // Set Class Member Values
-    _runFolder = parsedFile["HPCSetup"]["RunFolder"].value_or("default");
+    // Fill in Struct's Member Values
+    MoleculeTest moleculeTest; {
+        moleculeTest.RunFolderName = parsedFile["HPCSetup"]["RunFolder"].value_or("default");
 
-    _numCPUs = parsedFile["HPCSetup"]["NumCPUs"].value_or(MAX_CORES);
-    _useGPU = parsedFile["HPCSetup"]["UseGPU"].value_or(false);
+        moleculeTest.NumCPUs = parsedFile["HPCSetup"]["NumCPUs"].value_or(MAX_CORES);
+        moleculeTest.UseGPU = parsedFile["HPCSetup"]["UseGPU"].value_or(false);
 
-    _maxHours = parsedFile["HPCSetup"]["MaxHours"].value_or(48.0);
+        moleculeTest.MaxHours = parsedFile["HPCSetup"]["MaxHours"].value_or(48.0);
 
-    _moleculeName = parsedFile["Molecule"]["Name"].value_or("");
+        moleculeTest.MoleculeName = parsedFile["Molecule"]["Name"].value_or("");
 
-    _createGeometry = parsedFile["Molecule"]["CreateGeometry"].value_or(true);
-    _geometryStartIndex = parsedFile["Molecule"]["GeometryStartingIndex"].value_or(0);
+        moleculeTest.CreateGeometry = parsedFile["Molecule"]["CreateGeometry"].value_or(true);
+        moleculeTest.GeometryStartIndex = parsedFile["Molecule"]["GeometryStartingIndex"].value_or(0);
 
-    _method = parsedFile["Computation"]["Method"].value_or("");
+        moleculeTest.Method = parsedFile["Computation"]["Method"].value_or("");
 
-    _multiplicity = parsedFile["Computation"]["Multiplicity"].value_or(0);
-    _temperature = parsedFile["Computation"]["Temerature"].value_or(0.0);
-    _timestepDuration = parsedFile["Computation"]["TimestepDuration"].value_or(0.0);
+        moleculeTest.Multiplicity = parsedFile["Computation"]["Multiplicity"].value_or(0);
+        moleculeTest.Temperature = parsedFile["Computation"]["Temerature"].value_or(0.0);
+        moleculeTest.TimestepDuration = parsedFile["Computation"]["TimestepDuration"].value_or(0.0);
 
-    _numBranches = parsedFile["Computation"]["NumBranches"].value_or(0);
-    _numStates = parsedFile["Computation"]["NumStates"].value_or(0);
-    _numTrajectories = parsedFile["Computation"]["NumTrajectories"].value_or(0);
-    _numTimesteps = parsedFile["Computation"]["NumTimesteps"].value_or(0);
-}
+        moleculeTest.NumBranches = parsedFile["Computation"]["NumBranches"].value_or(0);
+        moleculeTest.NumStates = parsedFile["Computation"]["NumStates"].value_or(0);
+        moleculeTest.NumTrajectories = parsedFile["Computation"]["NumTrajectories"].value_or(0);
+        moleculeTest.NumTimesteps = parsedFile["Computation"]["NumTimesteps"].value_or(0);
+    }
 
-/// @brief 
-InputFile::~InputFile() { }
-
-/// @brief Return the Full path of the Run Folder
-std::string InputFile::RunFolderPath() const
-{ 
-    return fmt::format("{0}/{1}", RESULTS_PATH, _runFolder);
+    // Return Created Object
+    return moleculeTest;
 }
