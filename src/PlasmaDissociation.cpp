@@ -14,30 +14,33 @@ namespace fs = std::filesystem;
 int main(int argc, char *argv[])
 {
     // Create Command Line Options
-    po::options_description visibleOptionsDescription("Invocation: <program> --help <input-files>"); // TODO: Better Description Needed
-    visibleOptionsDescription.add_options()
+    po::options_description genericOptions("Generic Options");
+    genericOptions.add_options()
         ("help", "Produce a Help Message")
         ("version,v", "Display the Program's Version");
     
-    po::options_description hiddenOptionsDescription;
-    hiddenOptionsDescription.add_options()
+    po::options_description hiddenOptions;
+    hiddenOptions.add_options()
         ("input-files", po::value<std::vector<std::string>>(), "Tested Input Files");
 
-    po::options_description optionsDescription;
-    optionsDescription.add(visibleOptionsDescription).add(hiddenOptionsDescription);
+    po::options_description visibleOptions("usage: <program> --help <input-files>"); // TODO: Better Description Needed
+    visibleOptions.add(genericOptions);
+
+    po::options_description fullOptions;
+    fullOptions.add(visibleOptions).add(hiddenOptions);
 
     // Create Positional Options
-    po::positional_options_description positionalOptionsDescription;
-    positionalOptionsDescription.add("input-files", -1);
+    po::positional_options_description positionalOptions;
+    positionalOptions.add("input-files", -1);
 
     // Create Variable Map
     po::variables_map variablesMap;
-    po::store(po::command_line_parser(argc, argv).options(optionsDescription).positional(positionalOptionsDescription).run(), variablesMap);
+    po::store(po::command_line_parser(argc, argv).options(fullOptions).positional(positionalOptions).run(), variablesMap);
     po::notify(variablesMap);
 
     // Print Help Message if Needed
     if (variablesMap.count("help")) {
-        std::cout << visibleOptionsDescription << std::endl;
+        std::cout << visibleOptions << std::endl;
         return 0;
     }
 
