@@ -20,6 +20,4 @@ public:
 
     template<typename T>
     std::optional<T> GetParam(std::string a_paramName, std::optional<T> a_defaultValue = {});
-    //template<typename T>
-    //std::optional<T> GetParam(std::string a_paramName, std::stringstream& r_validationErrorMessage, std::optional<T> a_defaultValue = {});
 };
