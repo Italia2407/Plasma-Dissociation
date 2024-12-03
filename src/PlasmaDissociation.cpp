@@ -52,7 +52,8 @@ int main(int argc, char *argv[])
 
     std::vector<MoleculeTest> moleculeTests;
     for (auto inputFile : variablesMap["input-files"].as<std::vector<std::string>>()) {
-        auto moleculeTest = MoleculeTest::CreateFromTOMLFile(inputFile);
+        std::string inputFilePath = fmt::format("{0}/Molecule-Tests/{1}", ASSETS_PATH, inputFile);
+        auto moleculeTest = MoleculeTest::CreateFromTOMLFile(inputFilePath);
         if (moleculeTest)
             moleculeTests.push_back(moleculeTest.value());
     }
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
     std::cout << "Tested Molecule: " << moleculeTests[0].MoleculeName << std::endl;
 
     // Get Results Folder Path
-    fs::directory_entry runFolder(fmt::format("{0}/{1}", RESULTS_PATH, moleculeTests[0].GetRunFolderPath()));
+    fs::directory_entry runFolder(fmt::format("{0}/{1}", RESULTS_PATH, moleculeTests[0].RunFolder));
 
     if (runFolder.is_directory()) {
         // Check if Existing RunFolder should be Deleted

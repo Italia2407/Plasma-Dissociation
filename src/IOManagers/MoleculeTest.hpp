@@ -3,14 +3,11 @@
 #include <string>
 #include <optional>
 
-#include <toml++/toml.hpp>
-
 struct MoleculeTest
 {
 public:
     // HPC Setup Parameters
-    std::string RunFolderName;
-    std::string GetRunFolderPath() const;
+    std::string RunFolder;
 
     int NumCPUs;
     bool UseGPU;
@@ -39,5 +36,5 @@ public:
     bool AreValuesValid() const;
 
     // Builder Methods
-    static std::optional<MoleculeTest> CreateFromTOMLFile(std::string a_fileName);
+    static std::optional<MoleculeTest> CreateFromTOMLFile(std::string a_filePath);
 };
