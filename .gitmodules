@@ -4,3 +4,6 @@
 [submodule "libs/fmt-11.0.2"]
 	path = libs/fmt-11.0.2
 	url = https://github.com/fmtlib/fmt.git
+[submodule "libs/argparse"]
+	path = libs/argparse
+	url = https://github.com/p-ranav/argparse.git

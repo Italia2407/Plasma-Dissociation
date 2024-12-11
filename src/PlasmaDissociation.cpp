@@ -3,61 +3,44 @@
 
 #include <fmt/format.h>
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include <argparse/argparse.hpp>
 
 #include <filesystem>
 namespace fs = std::filesystem;
 
 #include "IOManagers/MoleculeTest.hpp"
 
+/// @brief Program's Main Function
+/// @param argc Number of Command Line Arguments Passed
+/// @param argv Command Line Arguments Passed
+/// @return 
 int main(int argc, char *argv[])
 {
-    // Create Command Line Options
-    po::options_description genericOptions("Generic Options");
-    genericOptions.add_options()
-        ("help", "Produce a Help Message")
-        ("version,v", "Display the Program's Version");
-    
-    po::options_description hiddenOptions;
-    hiddenOptions.add_options()
-        ("input-files", po::value<std::vector<std::string>>(), "Tested Input Files");
+    // Create Argument Parser
+    argparse::ArgumentParser argumentParser("Plasma-Dissociation", "1.0.0"); {
+        argumentParser.add_argument("input-files")
+            .help("The Tested Input Files")
+            .nargs(argparse::nargs_pattern::at_least_one);
+    }
 
-    po::options_description visibleOptions("usage: <program> --help <input-files>"); // TODO: Better Description Needed
-    visibleOptions.add(genericOptions);
+    // Parse Arguments from Command Line
+    try {
+        argumentParser.parse_args(argc, argv);
+    }
+    catch (const std::exception& err) {
+        std::cerr << err.what() << std::endl;
 
-    po::options_description fullOptions;
-    fullOptions.add(visibleOptions).add(hiddenOptions);
-
-    // Create Positional Options
-    po::positional_options_description positionalOptions;
-    positionalOptions.add("input-files", -1);
-
-    // Create Variable Map
-    po::variables_map variablesMap;
-    po::store(po::command_line_parser(argc, argv).options(fullOptions).positional(positionalOptions).run(), variablesMap);
-    po::notify(variablesMap);
-
-    // Print Help Message if Needed
-    if (variablesMap.count("help")) {
-        std::cout << visibleOptions << std::endl;
         return 0;
     }
 
-    // Initialise Molecule Tests
-    if (variablesMap.count("input-files") < 1) {
-        std::cerr << "ERROR: At least one Input File must be Provided" << std::endl;
-        return 0;
-    }
-
+    // Parse TOML Files
     std::vector<MoleculeTest> moleculeTests;
-    for (auto inputFile : variablesMap["input-files"].as<std::vector<std::string>>()) {
+    for (auto inputFile : argumentParser.get<std::vector<std::string>>("input-files")) {
         std::string inputFilePath = fmt::format("{0}/Molecule-Tests/{1}", ASSETS_PATH, inputFile);
         auto moleculeTest = MoleculeTest::CreateFromTOMLFile(inputFilePath);
         if (moleculeTest)
             moleculeTests.push_back(moleculeTest.value());
     }
-
     // Ensure at least one File was Parsed Correctly
     if (moleculeTests.size() < 1)
         return 0;
