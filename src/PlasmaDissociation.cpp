@@ -36,8 +36,7 @@ int main(int argc, char *argv[])
     // Parse TOML Files
     std::vector<MoleculeTest> moleculeTests;
     for (auto inputFile : argumentParser.get<std::vector<std::string>>("input-files")) {
-        std::string inputFilePath = fmt::format("{0}/Molecule-Tests/{1}", ASSETS_PATH, inputFile);
-        auto moleculeTest = MoleculeTest::CreateFromTOMLFile(inputFilePath);
+        auto moleculeTest = MoleculeTest::CreateFromTOMLFile(inputFile);
         if (moleculeTest)
             moleculeTests.push_back(moleculeTest.value());
     }
@@ -49,19 +48,12 @@ int main(int argc, char *argv[])
     std::cout << "Tested Molecule: " << moleculeTests[0].MoleculeName << std::endl;
 
     // Get Results Folder Path
-    fs::directory_entry runFolder(fmt::format("{0}/{1}", RESULTS_PATH, moleculeTests[0].RunFolder));
+    fs::directory_entry runFolder(moleculeTests[0].RunFolder);
 
+    // Ensure Directory does not Exist
     if (runFolder.is_directory()) {
-        // Check if Existing RunFolder should be Deleted
-        std::cout << "Run Folder already Exists. Do you want to delete it? (Y/n): ";
-        std::string cliInput; std::getline(std::cin, cliInput);
-
-        if (cliInput == "Y" || cliInput == "y")
-            fs::remove(runFolder);
-        else {
-            std::cerr << "ERROR: RunFolder already Exists. Change the RunFolder Name or delete/move it" << std::endl;
-            return 0;
-        }
+        std::cerr << "ERROR: RunFolder already Exists. Change the RunFolder Name or delete/move it" << std::endl;
+        return 0;
     }
 
     // Create the RunFolder
