@@ -2,7 +2,6 @@
 
 #include <string>
 #include <optional>
-#include <sstream>
 
 #include <toml++/toml.hpp>
 
