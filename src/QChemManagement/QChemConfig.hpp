@@ -3,9 +3,12 @@
 #include <string>
 #include <optional>
 
+namespace QChemManagement {
+
 struct QChemConfig
 {
 public:
+    std::string RunFolder;
     std::string GeometryInput;
 
     int NumCPUs;
@@ -21,3 +24,5 @@ public:
     // Builder Methods
     static std::optional<QChemConfig> CreateFromTOMLFile(std::string a_filePath);
 };
+
+}

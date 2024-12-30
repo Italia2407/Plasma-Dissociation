@@ -5,7 +5,6 @@
 
 struct MoleculeTest
 {
-public:
     // HPC Setup Parameters
     std::string RunFolder;
 

@@ -1,6 +1,6 @@
 #include "QChemConfig.hpp"
 
-#include "TOMLParser.hpp"
+#include "../IOManagement/TOMLReader.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -10,6 +10,8 @@
 #include <fmt/format.h>
 #include <toml++/toml.hpp>
 
+namespace QChemManagement {
+
 /// @brief Check whether the Values of the QChem Configuration are Valid
 bool QChemConfig::AreValuesValid() const
 {
@@ -17,13 +19,13 @@ bool QChemConfig::AreValuesValid() const
     return true;
 }
 
-/// @brief 
+/// @brief Create QChemConfig Object from TOML File
 /// @param a_fileName The TOML File to be Parsed
 /// @return The Created QChemConfig Object, if Successful
 std::optional<QChemConfig> QChemConfig::CreateFromTOMLFile(std::string a_filePath)
 {
-    // Ensure TOML File Can be Parsed Correctly
-    auto tomlParser = TOMLParser::ParseTOMLFile(a_filePath);
+    // Ensure TOML File was Parsed Correctly
+    auto tomlParser = IOManagement::TOMLReader::ParseTOMLFile(a_filePath);
     if (!tomlParser)
         return {};
 
@@ -34,7 +36,7 @@ std::optional<QChemConfig> QChemConfig::CreateFromTOMLFile(std::string a_filePat
     // TODO: Not available prior to C++20
     // TODO: Find Possible place for this Function to share code
     auto setParamValue = [&]<typename T>(T& r_paramReference, std::string a_paramName, std::optional<T> a_defaultValue = {}) {
-        auto parameter = tomlParser.value().GetParam<T>(a_paramName, a_defaultValue);
+        auto parameter = tomlParser.value().GetParameter<T>(a_paramName, a_defaultValue);
 
         // Ensure Parameter was Correctly Found
         if (!parameter) {
@@ -59,6 +61,8 @@ std::optional<QChemConfig> QChemConfig::CreateFromTOMLFile(std::string a_filePat
         r_paramReference = parameter.value();
     };
 
+    // TODO: Add Parameter Names
+    setParamValue(qchemConfig.RunFolder, "");
     setParamValue(qchemConfig.GeometryInput, "");
 
     setParamValue(qchemConfig.NumCPUs, "", std::optional<int>(MAX_CORES));
@@ -78,4 +82,6 @@ std::optional<QChemConfig> QChemConfig::CreateFromTOMLFile(std::string a_filePat
 
     // Return Created Object
     return qchemConfig;
+}
+
 }

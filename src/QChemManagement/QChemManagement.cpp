@@ -1,21 +1,22 @@
-#include <iostream>
-#include <fstream>
-
-#include <fmt/format.h>
-
-#include <argparse/argparse.hpp>
-
-#include "IOManagers/QChemConfig.hpp"
+#include "QChemManagement.hpp"
 
 #define QCHEM_INPUT_FILE  "qchem.inp"
 #define QCHEM_OUTPUT_FILE "qchem.out"
 
+#include <iostream>
+#include <fstream>
+
+#include <string>
+#include <fmt/format.h>
+
+namespace QChemManagement {
+
 /// @brief 
 /// @param a_qchemConfig 
 /// @return Whether the QChem Input File was Successfully Created
-bool createQChemInput(QChemConfig a_qchemConfig)
+bool CreateQChemInput(QChemConfig a_qchemConfig)
 {
-    // Open the Geometry File
+    // Open the Molecule Geometry File
     std::ifstream geometryFile(a_qchemConfig.GeometryInput);
     if (!geometryFile.is_open()) {
         std::cerr << fmt::format("ERROR: Could not Open Geometry File {0}", a_qchemConfig.GeometryInput) << std::endl;
@@ -24,9 +25,10 @@ bool createQChemInput(QChemConfig a_qchemConfig)
     }
 
     // Create QChem Input File
-    std::ofstream qchemInputFile(QCHEM_INPUT_FILE);
+    std::string qchemInputFilePath = fmt::format("{0}/{1}", a_qchemConfig.RunFolder, QCHEM_INPUT_FILE);
+    std::ofstream qchemInputFile(qchemInputFilePath);
     if (!qchemInputFile.is_open()) {
-        std::cerr << fmt::format("ERROR: Could not Create QChem Input File {0}", QCHEM_INPUT_FILE) << std::endl;
+        std::cerr << fmt::format("ERROR: Could not Create QChem Input File {0}", qchemInputFilePath) << std::endl;
 
         return false;
     }
@@ -68,50 +70,33 @@ bool createQChemInput(QChemConfig a_qchemConfig)
 }
 
 /// @brief 
-/// @param a_numCPUs The Number of CPUs with which to Run the Job
-/// @return Whether the Job was Successfully Submitted
-bool submitQChemJob(int a_numCPUs)
+/// @param a_qchemInputFile The Path to the QChem Input File
+/// @param a_qchemOutputFile The Path to the QChem Output File
+/// @param a_numCPUs The Number of CPUs with which to Run QChem
+void RunQChem(std::string a_qchemInputFile, std::string a_qchemOutputFile, int a_numCPUs)
 {
     // Create the CLI Command String
-    std::string qchemCommand = fmt::format("qchem -save -nt {0} \"{1}\" \"{2}\" wf", a_numCPUs, QCHEM_INPUT_FILE, QCHEM_OUTPUT_FILE);
+    std::string qchemCommand = fmt::format("qchem -save -nt {0} \"{1}\" \"{2}\" wf", a_numCPUs, a_qchemInputFile, a_qchemOutputFile);
 
     // Submit the CLI Command
     system(qchemCommand.c_str());
+}
 
+/// @brief 
+/// @param a_qchemConfig 
+/// @return Whether the QChem Job was Successfully Submitted
+bool SubmitQChemJob(QChemConfig a_qchemConfig)
+{
+    // Create the QChem Input
+    if (!CreateQChemInput(a_qchemConfig))
+        return false;
+
+    // Run QChem CLI Command
+    std::string qchemInputFilePath = fmt::format("{0}/{1}", a_qchemConfig.RunFolder, QCHEM_INPUT_FILE);
+    std::string qchemOutputFilePath = fmt::format("{0}/{1}", a_qchemConfig.RunFolder, QCHEM_OUTPUT_FILE);
+
+    RunQChem(qchemInputFilePath, qchemOutputFilePath, a_qchemConfig.NumCPUs);
     return true;
 }
 
-int main(int argc, char *argv[])
-{
-    // Create Argument Parser
-    argparse::ArgumentParser argumentParser("Run-QChem", "1.0.0"); {
-        argumentParser.add_argument("configuration-file")
-            .help("")
-            .nargs(1);
-    }
-
-    // Parse Arguments from Command Line
-    try {
-        argumentParser.parse_args(argc, argv);
-    }
-    catch (const std::exception& err) {
-        std::cerr << err.what() << std::endl;
-
-        return 0;
-    }
-
-    // Parse TOML File
-    std::string qchemConfigFile = argumentParser.get<std::string>("configuration-file");
-    auto qchemConfig = QChemConfig::CreateFromTOMLFile(qchemConfigFile);
-
-    // Ensure Configuration File was Parsed Correctly
-    if (!qchemConfig.has_value())
-        return 0;
-
-    // Submit QChem Job to Run
-    createQChemInput(qchemConfig.value());
-    submitQChemJob(qchemConfig.value().NumCPUs);
-    //std::ofstream qchemFile(fmt::format("{0}/{1}/{2}", RESULTS_PATH, ))
-
-    return 1;
 }
