@@ -1,5 +1,5 @@
 [HPCSetup]
-RunFolder = "../../results/M0L-Test" # Path to the Folder used to Hold the Processed Data
+ProjectName = "M0L-Test" # 
 
 NumCPUs = 8
 UseGPU = false
@@ -21,5 +21,5 @@ TimestepDuration = 10.0
 
 NumBranches = 0
 NumStates = 1
-NumTrajectories = 2
+NumTrajectories = 32
 NumTimesteps = 2500

@@ -57,7 +57,7 @@ std::optional<MoleculeTest> MoleculeTest::CreateFromTOMLFile(std::string a_fileP
         r_paramReference = parameter.value();
     };
 
-    setParamValue(moleculeTest.RunFolder, "HPCSetup.RunFolder");
+    setParamValue(moleculeTest.ProjectName, "HPCSetup.ProjectName");
 
     setParamValue(moleculeTest.NumCPUs, "HPCSetup.NumCPUs", std::optional<int>(MAX_CORES));
     setParamValue(moleculeTest.UseGPU, "HPCSetup.UseGPU", std::optional<bool>(false));

@@ -1,24 +1,25 @@
-[Setup]
-RunFolder = 'Methane-Test'
-Cores = 8
+[HPCSetup]
+ProjectName = "CH4" # 
 
-Repetitions = 1
-Restart = true
+NumCPUs = 8
+UseGPU = false
 
-InitRE = false
+MaxHours = 16.0
 
-# Can be in any Order and Spacing, might be good idea to organise them in such a way it is clear where each option would be found
-[Run]
-GeomFLG = true
-Molecule = 'Methane'
-States = 1
-Multiplicity = 3
-Temperature = 1000
-CutOff = 1
-Branches = 0
-Timestep = 10
-NumTimesteps = 2500
-GeomStart = true
-SpinFlip = false
+[Molecule]
+Name = "Methane"
+
+CreateGeometry = true
+GeometryStartingIndex = 0 # Used only when CreateGeometry is false
+
+[Computation]
 Method = "QChem"
-GPU = false
+
+Multiplicity = 3
+Temperature = 1000.0 # Temeprature is in Kelvin Degrees
+TimestepDuration = 10.0
+
+NumBranches = 0
+NumStates = 1
+NumTrajectories = 32
+NumTimesteps = 2500

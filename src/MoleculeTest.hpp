@@ -6,7 +6,7 @@
 struct MoleculeTest
 {
     // HPC Setup Parameters
-    std::string RunFolder;
+    std::string ProjectName;
 
     int NumCPUs;
     bool UseGPU;
