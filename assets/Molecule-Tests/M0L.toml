@@ -1,5 +1,5 @@
 [HPCSetup]
-ProjectName = "M0L-Test" # 
+ProjectName = "M0L-Test" 
 
 NumCPUs = 8
 UseGPU = false

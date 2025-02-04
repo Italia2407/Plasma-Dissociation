@@ -3,13 +3,16 @@ cmake_minimum_required(VERSION 3.12)
 project("Plasma-Dissociation" LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
-# 
+# External Libraries
 add_subdirectory("libs/tomlplusplus")
 add_subdirectory("libs/fmt-11.0.2")
 add_subdirectory("libs/argparse")
 
-# Program Executable
+# Program Executables
 set(MOLECULE_TEST_FILES "src/MoleculeTest.cpp" "src/MoleculeTest.hpp")
+
+add_executable(pd-setup-run "src/run.cpp" ${MOLECULE_TEST_FILES})
+target_link_libraries(pd-setup-run PRIVATE shared argparse io-management)
 
 add_executable(plasma-dissociation "src/main.cpp" ${MOLECULE_TEST_FILES})
 target_link_libraries(plasma-dissociation PRIVATE shared argparse io-management)
