@@ -8,16 +8,16 @@ MaxHours = 16.0
 
 [Molecule]
 Name = "Molecule"
-
 CreateGeometry = true
-GeometryStartingIndex = 0 # Used only when CreateGeometry is false
 
 [Computation]
 Method = "QChem"
+Theory = "SCF"
+SpinFlip = true
 
 Multiplicity = 3
-Temperature = 1000.0 # Temeprature is in Kelvin Degrees
-TimestepDuration = 10.0
+Temperature = 1000.0 #Temperature is in Kelvin Degrees
+TimestepDuration = 10.0 #Timestep Duration is in FemtoSeconds
 
 NumBranches = 0
 NumStates = 1

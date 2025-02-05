@@ -15,12 +15,12 @@ struct MoleculeTest
 
     // Molecule Parameters
     std::string MoleculeName;
-
     bool CreateGeometry;
-    int GeometryStartIndex;
 
     // Computation Parameters
     std::string Method;
+    std::string Theory;
+    bool SpinFlip;
 
     int Multiplicity;
     double Temperature;

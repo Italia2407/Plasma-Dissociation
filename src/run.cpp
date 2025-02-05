@@ -20,36 +20,40 @@ static fs::directory_entry projectsDirectory;
 
 /// @brief 
 /// @param a_moleculeTest 
+std::string getProjectFolder(MoleculeTest a_moleculeTest)
+{
+    return fmt::format("{0}/{1}", projectsDirectory.path().lexically_normal().c_str(), a_moleculeTest.ProjectName);
+}
+
+/// @brief 
+/// @param a_moleculeTest 
 /// @param a_restartProject 
 /// @return Whether the Project Directories were Successfully Created
 bool createProjectDirectories(MoleculeTest a_moleculeTest, bool a_restartProject)
 {
-    // Get the Project's RunFolder
-    std::string runFolder = fmt::format("{0}/{1}", projectsDirectory.path().lexically_normal().c_str(), a_moleculeTest.ProjectName);
-
     // Clear Project Folder if Restarts Allowed
     if (a_restartProject)
-        fs::remove_all(runFolder);
+        fs::remove_all(getProjectFolder(a_moleculeTest));
     // Ensure Project isn't Ongoing
-    else if (fs::exists(runFolder)) {
+    else if (fs::exists(getProjectFolder(a_moleculeTest))) {
         std::cerr << fmt::format("ERROR: Project {0} is Currently Ongoing. Change the Project Name or Enable Project Restart", a_moleculeTest.ProjectName) << std::endl;
         return false;
     }
 
     // Create Project Folders
-    fs::create_directories(runFolder);
+    fs::create_directories(getProjectFolder(a_moleculeTest));
 
-    fs::create_directory(fmt::format("{0}/trajectories", runFolder));
+    fs::create_directory(fmt::format("{0}/trajectories", getProjectFolder(a_moleculeTest)));
 
     for (int i = 0; i < a_moleculeTest.NumTrajectories; i++)
-        fs::create_directory(fmt::format("{0}/trajectories/run-{1}", runFolder, i+1));
+        fs::create_directory(fmt::format("{0}/trajectories/run-{1}", getProjectFolder(a_moleculeTest), i));
 
     // Create Geometries if Needed
-    fs::create_directory(fmt::format("{0}/geometries", runFolder));
+    fs::create_directory(fmt::format("{0}/geometries", getProjectFolder(a_moleculeTest)));
 
     if (a_moleculeTest.CreateGeometry) {
     for (int i = 0; i < a_moleculeTest.NumTrajectories; i++) {
-        std::ofstream geometryFile(fmt::format("{0}/geometries/Geom-{1}.txt", runFolder, i+1));
+        std::ofstream geometryFile(fmt::format("{0}/geometries/Geom-{1}.txt", getProjectFolder(a_moleculeTest), i));
         geometryFile.close();
     }}
     else
@@ -59,8 +63,8 @@ bool createProjectDirectories(MoleculeTest a_moleculeTest, bool a_restartProject
 
         // Check if all Geometry files have been added
         for (int i = 0; i < a_moleculeTest.NumTrajectories; i++)
-            if (!fs::exists(fmt::format("{0}/geometries/Geom-{1}.txt", runFolder, i+1)))
-                std::cerr << fmt::format("ERROR: {0}/geometries/Geom-{1}.txt could not be found", runFolder, i+1) << std::endl;
+            if (!fs::exists(fmt::format("{0}/geometries/Geom-{1}.txt", getProjectFolder(a_moleculeTest), i)))
+                std::cerr << fmt::format("ERROR: {0}/geometries/Geom-{1}.txt could not be found", getProjectFolder(a_moleculeTest), i) << std::endl;
     }
 
     return true;
@@ -81,7 +85,7 @@ bool runProjectARC(MoleculeTest a_moleculeTest)
     double maxHours = std::clamp(a_moleculeTest.MaxHours, 0.25, 48.0);
 
     // Write ARC Submission Script
-    std::ofstream scriptFile(fmt::format("{0}/{1}/ARC_Commands.sh", projectsDirectory.path().lexically_normal().c_str(), a_moleculeTest.ProjectName));
+    std::ofstream scriptFile(fmt::format("{0}/ARC_Commands.sh", getProjectFolder(a_moleculeTest)));
 
     // ARC Setup Instructions
     scriptFile << "#$ -cwd -V" << '\n';
@@ -104,9 +108,14 @@ bool runProjectARC(MoleculeTest a_moleculeTest)
     scriptFile << "export QCPROG_S=\"$QC/exe/qcprog.exe_s\"" << '\n';
     scriptFile << "export PATH=\"$PATH:$QC/exe:$QC/bin\"" << '\n';
 
-    scriptFile << fmt::format("cd projects/{0}/trajectories/run-$SGE_TASK_ID", a_moleculeTest.ProjectName) << '\n';
-
-    // TODO: Call Program to run Computations
+    // Call Program to run Computations
+    scriptFile << fmt::format("./plasma-dissociation $SGE_TASK_ID list \"{0}\"", getProjectFolder(a_moleculeTest)) << " ";
+    scriptFile << fmt::format("--num_cpus {0}", a_moleculeTest.NumCPUs) << " ";
+    scriptFile << fmt::format("{0} {1}", a_moleculeTest.NumStates, a_moleculeTest.NumBranches) << " ";
+    scriptFile << fmt::format("{0} {1}", a_moleculeTest.NumTimesteps, a_moleculeTest.TimestepDuration) << " ";
+    scriptFile << fmt::format("--theory \"{0}\"", a_moleculeTest.Theory) << " ";
+    if (a_moleculeTest.SpinFlip)
+        scriptFile << "--spin_flip" << " ";
 
     scriptFile.close();
 
@@ -124,7 +133,7 @@ int main(int argc, char *argv[])
 {
     // Create Argument Parser
     argparse::ArgumentParser argumentParser("PD-Setup-Run", "1.0.0"); {
-        argumentParser.add_argument("input-files")
+        argumentParser.add_argument("input_files")
             .help("The Tested Input Files")
             .nargs(argparse::nargs_pattern::at_least_one);
         argumentParser.add_argument("-R", "--restart")
@@ -154,7 +163,7 @@ int main(int argc, char *argv[])
 
     // Parse TOML Files
     std::vector<MoleculeTest> moleculeTests;
-    for (auto inputFile : argumentParser.get<std::vector<std::string>>("input-files")) {
+    for (auto inputFile : argumentParser.get<std::vector<std::string>>("input_files")) {
         auto moleculeTest = MoleculeTest::CreateFromTOMLFile(inputFile);
         if (moleculeTest)
             moleculeTests.push_back(moleculeTest.value());

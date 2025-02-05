@@ -65,11 +65,11 @@ std::optional<MoleculeTest> MoleculeTest::CreateFromTOMLFile(std::string a_fileP
     setParamValue(moleculeTest.MaxHours, "HPCSetup.MaxHours", std::optional<double>(48.0));
 
     setParamValue(moleculeTest.MoleculeName, "Molecule.Name");
-
     setParamValue(moleculeTest.CreateGeometry, "Molecule.CreateGeometry", std::optional<bool>(true));
-    setParamValue(moleculeTest.GeometryStartIndex, "Molecule.GeometryStartingIndex", std::optional<int>(0));
 
     setParamValue(moleculeTest.Method, "Computation.Method");
+    setParamValue(moleculeTest.Theory, "Computation.Theory");
+    setParamValue(moleculeTest.SpinFlip, "Computation.SpinFlip");
 
     setParamValue(moleculeTest.Multiplicity, "Computation.Multiplicity");
     setParamValue(moleculeTest.Temperature, "Computation.Temperature");
