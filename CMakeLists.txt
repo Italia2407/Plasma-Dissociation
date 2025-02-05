@@ -23,17 +23,12 @@ set(QCHEM_CONFIG_FILES "src/QChemManagement/QChemConfig.cpp" "src/QChemManagemen
 add_library(qchem-management ${QCHEM_CONFIG_FILES} "src/QChemManagement/QChemManagement.cpp" "src/QChemManagement/QChemManagement.hpp")
 target_link_libraries(qchem-management PRIVATE shared io-management)
 
-# IO Management Library
-set(TOML_READER_FILES "src/IOManagement/TOMLReader.cpp" "src/IOManagement/TOMLReader.hpp")
-set(JSON_READER_FILES ) # TODO: Create JSON
-
-add_library(io-management ${TOML_READER_FILES} ${JSON_READER_FILES})
-target_link_libraries(io-management PRIVATE shared)
-target_link_libraries(io-management PUBLIC tomlplusplus::tomlplusplus)
-
 # Shared Project Features
 # TODO: Better Description
 add_library(shared INTERFACE)
 
 target_link_libraries(shared INTERFACE fmt::fmt)
 target_compile_definitions(shared INTERFACE MAX_CORES=8)
+
+# Add CMake Sub-Directories
+add_subdirectory("src/IOManagement")
