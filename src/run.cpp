@@ -23,7 +23,6 @@ static fs::directory_entry projectsDirectory;
 std::string getProjectFolder(MoleculeProject a_moleculeProject)
 {
     return fmt::format("{0}/{1}", projectsDirectory.path().lexically_normal().c_str(), a_moleculeProject.ProjectName);
-    projectsDirectory.
 }
 
 /// @brief 
