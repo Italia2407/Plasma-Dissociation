@@ -6,14 +6,14 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include "MoleculeTest.hpp"
+#include "MoleculeProject.hpp"
 
 static std::string projectFolder;
-static MoleculeTest moleculeTest;
+static MoleculeProject moleculeProject;
 
 int main(int argc, char *argv[])
 {
-    // TODO: Write Argument Descriptions
+    // Create Argument Parsers #TODO: Write Argument Descriptions
     // Create Argument Parsers
     argparse::ArgumentParser listParser("list"); {
         listParser.add_argument("project_folder")
@@ -80,16 +80,16 @@ int main(int argc, char *argv[])
     if (argumentParser.is_subcommand_used(listParser)) {
         projectFolder = listParser.get<std::string>("project_folder");
 
-        moleculeTest.NumStates = listParser.get<int>("num_states");
-        moleculeTest.NumBranches = listParser.get<int>("num_branches");
-        moleculeTest.NumTimesteps = listParser.get<int>("num_timesteps");
+        moleculeProject.NumStates = listParser.get<int>("num_states");
+        moleculeProject.NumBranches = listParser.get<int>("num_branches");
+        moleculeProject.NumTimesteps = listParser.get<int>("num_timesteps");
 
-        moleculeTest.TimestepDuration = listParser.get<double>("timestep_duration");
+        moleculeProject.TimestepDuration = listParser.get<double>("timestep_duration");
 
-        moleculeTest.NumCPUs = listParser.get<int>("--num_cpus");
+        moleculeProject.NumCPUs = listParser.get<int>("--num_cpus");
 
-        moleculeTest.Theory = listParser.get<std::string>("--theory");
-        moleculeTest.SpinFlip = listParser.get<bool>("--spin_flip");
+        moleculeProject.Theory = listParser.get<std::string>("--theory");
+        moleculeProject.SpinFlip = listParser.get<bool>("--spin_flip");
 
         std::cout << "World, Hello!" << std::endl;
     }
@@ -102,12 +102,12 @@ int main(int argc, char *argv[])
         }
 
         // Parse TOML Project File
-        auto projectFile = MoleculeTest::CreateFromTOMLFile(fileParser.get<std::string>("project_file"));
+        auto projectFile = MoleculeProject::CreateFromTOMLFile(fileParser.get<std::string>("project_file"));
         if (!projectFile)
             return 0;
-        moleculeTest = projectFile.value();
+        moleculeProject = projectFile.value();
 
-        projectFolder = fmt::format("{0}/{1}", projectsDirectory.path().lexically_normal().c_str(), moleculeTest.ProjectName);
+        projectFolder = fmt::format("{0}/{1}", projectsDirectory.path().lexically_normal().c_str(), moleculeProject.ProjectName);
 
         std::cout << "Hello World!" << std::endl;
     }

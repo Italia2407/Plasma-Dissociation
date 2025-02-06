@@ -3,7 +3,7 @@
 #include <string>
 #include <optional>
 
-struct MoleculeTest
+struct MoleculeProject
 {
     // HPC Setup Parameters
     std::string ProjectName;
@@ -35,5 +35,5 @@ public:
     bool AreValuesValid() const;
 
     // Builder Methods
-    static std::optional<MoleculeTest> CreateFromTOMLFile(std::string a_filePath);
+    static std::optional<MoleculeProject> CreateFromTOMLFile(std::string a_filePath);
 };

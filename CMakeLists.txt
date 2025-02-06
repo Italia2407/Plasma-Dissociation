@@ -9,12 +9,12 @@ add_subdirectory("libs/fmt-11.0.2")
 add_subdirectory("libs/argparse")
 
 # Program Executables
-set(MOLECULE_TEST_FILES "src/MoleculeTest.cpp" "src/MoleculeTest.hpp")
+set(MOLECULE_PROJECT_FILES "src/MoleculeProject.cpp" "src/MoleculeProject.hpp")
 
-add_executable(pd-setup-run "src/run.cpp" ${MOLECULE_TEST_FILES})
+add_executable(pd-setup-run "src/run.cpp" ${MOLECULE_PROJECT_FILES})
 target_link_libraries(pd-setup-run PRIVATE shared argparse io-management)
 
-add_executable(plasma-dissociation "src/main.cpp" ${MOLECULE_TEST_FILES})
+add_executable(plasma-dissociation "src/main.cpp" ${MOLECULE_PROJECT_FILES})
 target_link_libraries(plasma-dissociation PRIVATE shared argparse io-management)
 
 # QChem Management Library

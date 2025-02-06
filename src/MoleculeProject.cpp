@@ -1,4 +1,4 @@
-#include "MoleculeTest.hpp"
+#include "MoleculeProject.hpp"
 
 #include "IOManagement/TOMLReader.hpp"
 
@@ -10,24 +10,24 @@
 #include <fmt/format.h>
 
 /// @brief Check whether the Values of the Molecule Test are Valid
-bool MoleculeTest::AreValuesValid() const
+bool MoleculeProject::AreValuesValid() const
 {
     // TODO: Implement actual Checks
     return true;
 }
 
-/// @brief Create MoleculeTest Object from TOML File
+/// @brief Create MoleculeProject Object from TOML File
 /// @param a_fileName The TOML File to be Parsed
-/// @return The Created MoleculeTest Object, if Successful
-std::optional<MoleculeTest> MoleculeTest::CreateFromTOMLFile(std::string a_filePath)
+/// @return The Created MoleculeProject Object, if Successful
+std::optional<MoleculeProject> MoleculeProject::CreateFromTOMLFile(std::string a_filePath)
 {
     // Ensure TOML File was Parsed Correctly
     auto tomlReader = IOManagement::TOMLReader::ParseTOMLFile(a_filePath);
     if (!tomlReader)
         return {};
 
-    // Create MoleculeTest Object, Ensuring Parameters are all Valid
-    MoleculeTest moleculeTest;
+    // Create MoleculeProject Object, Ensuring Parameters are all Valid
+    MoleculeProject moleculeProject;
     std::stringstream validationErrorMessage;
 
     // TODO: Not available prior to C++20
@@ -57,28 +57,28 @@ std::optional<MoleculeTest> MoleculeTest::CreateFromTOMLFile(std::string a_fileP
         r_paramReference = parameter.value();
     };
 
-    setParamValue(moleculeTest.ProjectName, "HPCSetup.ProjectName");
+    setParamValue(moleculeProject.ProjectName, "HPCSetup.ProjectName");
 
-    setParamValue(moleculeTest.NumCPUs, "HPCSetup.NumCPUs", std::optional<int>(MAX_CORES));
-    setParamValue(moleculeTest.UseGPU, "HPCSetup.UseGPU", std::optional<bool>(false));
+    setParamValue(moleculeProject.NumCPUs, "HPCSetup.NumCPUs", std::optional<int>(MAX_CORES));
+    setParamValue(moleculeProject.UseGPU, "HPCSetup.UseGPU", std::optional<bool>(false));
 
-    setParamValue(moleculeTest.MaxHours, "HPCSetup.MaxHours", std::optional<double>(48.0));
+    setParamValue(moleculeProject.MaxHours, "HPCSetup.MaxHours", std::optional<double>(48.0));
 
-    setParamValue(moleculeTest.MoleculeName, "Molecule.Name");
-    setParamValue(moleculeTest.CreateGeometry, "Molecule.CreateGeometry", std::optional<bool>(true));
+    setParamValue(moleculeProject.MoleculeName, "Molecule.Name");
+    setParamValue(moleculeProject.CreateGeometry, "Molecule.CreateGeometry", std::optional<bool>(true));
 
-    setParamValue(moleculeTest.Method, "Computation.Method");
-    setParamValue(moleculeTest.Theory, "Computation.Theory");
-    setParamValue(moleculeTest.SpinFlip, "Computation.SpinFlip");
+    setParamValue(moleculeProject.Method, "Computation.Method");
+    setParamValue(moleculeProject.Theory, "Computation.Theory");
+    setParamValue(moleculeProject.SpinFlip, "Computation.SpinFlip");
 
-    setParamValue(moleculeTest.Multiplicity, "Computation.Multiplicity");
-    setParamValue(moleculeTest.Temperature, "Computation.Temperature");
-    setParamValue(moleculeTest.TimestepDuration, "Computation.TimestepDuration");
+    setParamValue(moleculeProject.Multiplicity, "Computation.Multiplicity");
+    setParamValue(moleculeProject.Temperature, "Computation.Temperature");
+    setParamValue(moleculeProject.TimestepDuration, "Computation.TimestepDuration");
 
-    setParamValue(moleculeTest.NumBranches, "Computation.NumBranches");
-    setParamValue(moleculeTest.NumStates, "Computation.NumStates");
-    setParamValue(moleculeTest.NumTrajectories, "Computation.NumTrajectories");
-    setParamValue(moleculeTest.NumTimesteps, "Computation.NumTimesteps");
+    setParamValue(moleculeProject.NumBranches, "Computation.NumBranches");
+    setParamValue(moleculeProject.NumStates, "Computation.NumStates");
+    setParamValue(moleculeProject.NumTrajectories, "Computation.NumTrajectories");
+    setParamValue(moleculeProject.NumTimesteps, "Computation.NumTimesteps");
 
     // Fail if Validation Errors Occurred
     if (!validationErrorMessage.str().empty()) {
@@ -89,5 +89,5 @@ std::optional<MoleculeTest> MoleculeTest::CreateFromTOMLFile(std::string a_fileP
     }
 
     // Return the Created Object
-    return moleculeTest;
+    return moleculeProject;
 }
