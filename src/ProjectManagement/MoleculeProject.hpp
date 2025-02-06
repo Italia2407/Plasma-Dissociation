@@ -3,6 +3,9 @@
 #include <string>
 #include <optional>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 struct MoleculeProject
 {
     // HPC Setup Parameters
@@ -33,6 +36,8 @@ struct MoleculeProject
 
 public:
     bool AreValuesValid() const;
+
+    std::string getProjectFolder(fs::directory_entry a_projectsDirectory) const;
 
     // Builder Methods
     static std::optional<MoleculeProject> CreateFromTOMLFile(std::string a_filePath);

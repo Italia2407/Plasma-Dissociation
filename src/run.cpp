@@ -14,7 +14,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include "MoleculeProject.hpp"
+#include "ProjectManagement/MoleculeProject.hpp"
 
 static fs::directory_entry projectsDirectory;
 
@@ -108,19 +108,23 @@ bool runProjectARC(MoleculeProject a_moleculeProject)
     scriptFile << "export QCPROG_S=\"$QC/exe/qcprog.exe_s\"" << '\n';
     scriptFile << "export PATH=\"$PATH:$QC/exe:$QC/bin\"" << '\n';
 
+    // Enter the Project Folder
+    scriptFile << fmt::format("cd {0}", getProjectFolder(a_moleculeProject)) << '\n';
+
     // Call Program to run Computations
-    scriptFile << fmt::format("./plasma-dissociation $SGE_TASK_ID list \"{0}\"", getProjectFolder(a_moleculeProject)) << " ";
+    scriptFile << fmt::format("{0}/plasma-dissociation $SGE_TASK_ID list", fs::relative(fs::path(getProjectFolder(a_moleculeProject)), fs::current_path()).c_str()) << " ";
     scriptFile << fmt::format("--num_cpus {0}", a_moleculeProject.NumCPUs) << " ";
     scriptFile << fmt::format("{0} {1}", a_moleculeProject.NumStates, a_moleculeProject.NumBranches) << " ";
     scriptFile << fmt::format("{0} {1}", a_moleculeProject.NumTimesteps, a_moleculeProject.TimestepDuration) << " ";
     scriptFile << fmt::format("--theory \"{0}\"", a_moleculeProject.Theory) << " ";
     if (a_moleculeProject.SpinFlip)
         scriptFile << "--spin_flip" << " ";
+    scriptFile << '\n';
 
     scriptFile.close();
 
     // Submit Job to ARC
-    system("qsub -hold_jid qchemlocal ARC_Commands.sh");
+    //system("qsub -hold_jid qchemlocal ARC_Commands.sh");
 
     return true;
 }
@@ -141,7 +145,7 @@ int main(int argc, char *argv[])
             .flag();
         argumentParser.add_argument("-dir", "--projects_directory")
             .help("") // TODO: Add Description of Projects Directory Location
-            .default_value("./projects");
+            .default_value("DEFAULT_PROJECTS_FOLDER");
     }
 
     // Parse Arguments from Command Line

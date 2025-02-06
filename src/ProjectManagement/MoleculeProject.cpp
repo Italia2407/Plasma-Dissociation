@@ -1,6 +1,6 @@
 #include "MoleculeProject.hpp"
 
-#include "IOManagement/TOMLReader.hpp"
+#include "../IOManagement/TOMLReader.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -14,6 +14,14 @@ bool MoleculeProject::AreValuesValid() const
 {
     // TODO: Implement actual Checks
     return true;
+}
+
+/// @brief 
+/// @param a_projectsDirectory 
+/// @return 
+std::string MoleculeProject::getProjectFolder(fs::directory_entry a_projectsDirectory) const
+{
+    return fmt::format("{0}/{1}", a_projectsDirectory.path().lexically_normal().c_str(), ProjectName);
 }
 
 /// @brief Create MoleculeProject Object from TOML File

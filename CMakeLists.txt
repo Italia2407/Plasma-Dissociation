@@ -9,13 +9,11 @@ add_subdirectory("libs/fmt-11.0.2")
 add_subdirectory("libs/argparse")
 
 # Program Executables
-set(MOLECULE_PROJECT_FILES "src/MoleculeProject.cpp" "src/MoleculeProject.hpp")
+add_executable(pd-setup-run "src/run.cpp")
+target_link_libraries(pd-setup-run PRIVATE shared argparse io-management project-management)
 
-add_executable(pd-setup-run "src/run.cpp" ${MOLECULE_PROJECT_FILES})
-target_link_libraries(pd-setup-run PRIVATE shared argparse io-management)
-
-add_executable(plasma-dissociation "src/main.cpp" ${MOLECULE_PROJECT_FILES})
-target_link_libraries(plasma-dissociation PRIVATE shared argparse io-management)
+add_executable(plasma-dissociation "src/main.cpp")
+target_link_libraries(plasma-dissociation PRIVATE shared argparse io-management project-management)
 
 # QChem Management Library
 set(QCHEM_CONFIG_FILES "src/QChemManagement/QChemConfig.cpp" "src/QChemManagement/QChemConfig.hpp")
@@ -32,3 +30,4 @@ target_compile_definitions(shared INTERFACE MAX_CORES=8)
 
 # Add CMake Sub-Directories
 add_subdirectory("src/IOManagement")
+add_subdirectory("src/ProjectManagement")
