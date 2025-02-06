@@ -1,4 +1,8 @@
 #include <iostream>
+#include <fstream>
+
+#include <string>
+#include <fmt/format.h>
 
 #include <argparse/argparse.hpp>
 #include <fmt/format.h>
@@ -6,15 +10,27 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include "MoleculeProject.hpp"
+#include "ProjectManagement/MoleculeProject.hpp"
 
 static std::string projectFolder;
 static MoleculeProject moleculeProject;
 
+bool processGeometryFile(int a_trajectoryID, MoleculeProject a_moleculeProject)
+{
+    // Open Molecule Geometry File
+    std::ifstream geometryFile(fmt::format("../"));
+    if (!geometryFile.is_open()) {
+        //std::cerr << fmt::format("ERROR: Could not Open Geometry File {0}", a_qchemConfig.GeometryInput) << std::endl;
+
+        return false;
+    }
+
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
     // Create Argument Parsers #TODO: Write Argument Descriptions
-    // Create Argument Parsers
     argparse::ArgumentParser listParser("list"); {
         listParser.add_argument("project_folder")
             .help("Folder containing the Project to be Run");
@@ -52,7 +68,7 @@ int main(int argc, char *argv[])
             .nargs(argparse::nargs_pattern::at_least_one);
         fileParser.add_argument("-dir", "--projects_directory")
             .help("")
-            .default_value("./projects");
+            .default_value("DEFAULT_PROJECTS_FOLDER");
     }
     fileParser.add_description("");
 
