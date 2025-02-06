@@ -16,14 +16,6 @@ bool MoleculeProject::AreValuesValid() const
     return true;
 }
 
-/// @brief 
-/// @param a_projectsDirectory 
-/// @return 
-std::string MoleculeProject::getProjectFolder(fs::directory_entry a_projectsDirectory) const
-{
-    return fmt::format("{0}/{1}", a_projectsDirectory.path().lexically_normal().c_str(), ProjectName);
-}
-
 /// @brief Create MoleculeProject Object from TOML File
 /// @param a_fileName The TOML File to be Parsed
 /// @return The Created MoleculeProject Object, if Successful

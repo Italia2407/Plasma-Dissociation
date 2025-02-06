@@ -12,7 +12,6 @@ namespace fs = std::filesystem;
 
 #include "ProjectManagement/MoleculeProject.hpp"
 
-static std::string projectFolder;
 static MoleculeProject moleculeProject;
 
 bool processGeometryFile(int a_trajectoryID, MoleculeProject a_moleculeProject)
@@ -32,9 +31,6 @@ int main(int argc, char *argv[])
 {
     // Create Argument Parsers #TODO: Write Argument Descriptions
     argparse::ArgumentParser listParser("list"); {
-        listParser.add_argument("project_folder")
-            .help("Folder containing the Project to be Run");
-
         listParser.add_argument("num_states")
             .help("")
             .scan<'i', int>();
@@ -66,9 +62,6 @@ int main(int argc, char *argv[])
         fileParser.add_argument("project_file")
             .help("Input File")
             .nargs(argparse::nargs_pattern::at_least_one);
-        fileParser.add_argument("-dir", "--projects_directory")
-            .help("")
-            .default_value("DEFAULT_PROJECTS_FOLDER");
     }
     fileParser.add_description("");
 
@@ -80,6 +73,9 @@ int main(int argc, char *argv[])
             .help("ID of the Trajectory to be Run")
             .scan<'i', int>()
             .default_value(0);
+        argumentParser.add_argument("-dir", "--run_directory")
+            .help("Directory in Which the Program should be Run")
+            .default_value(".");
     }
 
     // Parse Arguments from Command Line
@@ -94,8 +90,6 @@ int main(int argc, char *argv[])
 
     // Store Input Parameters
     if (argumentParser.is_subcommand_used(listParser)) {
-        projectFolder = listParser.get<std::string>("project_folder");
-
         moleculeProject.NumStates = listParser.get<int>("num_states");
         moleculeProject.NumBranches = listParser.get<int>("num_branches");
         moleculeProject.NumTimesteps = listParser.get<int>("num_timesteps");
@@ -110,20 +104,11 @@ int main(int argc, char *argv[])
         std::cout << "World, Hello!" << std::endl;
     }
     else if (argumentParser.is_subcommand_used(fileParser)) {
-        // Ensure Projects Directory is Valid Location
-        auto projectsDirectory = fs::directory_entry(fileParser.get<std::string>("--projects_directory"));
-        if (projectsDirectory.exists() && !projectsDirectory.is_directory()) {
-            std::cerr << "ERROR: Provided Project Directory isn't Valid" << std::endl;
-            return 0;
-        }
-
         // Parse TOML Project File
         auto projectFile = MoleculeProject::CreateFromTOMLFile(fileParser.get<std::string>("project_file"));
         if (!projectFile)
             return 0;
         moleculeProject = projectFile.value();
-
-        projectFolder = fmt::format("{0}/{1}", projectsDirectory.path().lexically_normal().c_str(), moleculeProject.ProjectName);
 
         std::cout << "Hello World!" << std::endl;
     }
@@ -132,9 +117,11 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // Enter Specific Trajectory Folder
-    std::string path = fmt::format("{0}/trajectories/run-{1}", projectFolder, argumentParser.get<int>("--id_trajectory"));
-    fs::current_path(path);
+    // Enter Run Directory
+    fs::current_path(argumentParser.get<std::string>("--run_directory"));
+
+    //std::string path = fmt::format("trajectories/run-{0}", argumentParser.get<int>("--id_trajectory"));
+    //fs::current_path(path);
 
     return 1;
 }

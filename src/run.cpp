@@ -20,40 +20,36 @@ static fs::directory_entry projectsDirectory;
 
 /// @brief 
 /// @param a_moleculeProject 
-std::string getProjectFolder(MoleculeProject a_moleculeProject)
-{
-    return fmt::format("{0}/{1}", projectsDirectory.path().lexically_normal().c_str(), a_moleculeProject.ProjectName);
-}
-
-/// @brief 
-/// @param a_moleculeProject 
 /// @param a_restartProject 
 /// @return Whether the Project Directories were Successfully Created
 bool createProjectDirectories(MoleculeProject a_moleculeProject, bool a_restartProject)
 {
+    fs::directory_entry projectDirectory(fmt::format("{0}/{1}", projectsDirectory.path().c_str(), a_moleculeProject.ProjectName));
+
     // Clear Project Folder if Restarts Allowed
     if (a_restartProject)
-        fs::remove_all(getProjectFolder(a_moleculeProject));
+        fs::remove_all(projectDirectory.path().c_str());
     // Ensure Project isn't Ongoing
-    else if (fs::exists(getProjectFolder(a_moleculeProject))) {
+    else if (fs::exists(projectDirectory.path().c_str())) {
         std::cerr << fmt::format("ERROR: Project {0} is Currently Ongoing. Change the Project Name or Enable Project Restart", a_moleculeProject.ProjectName) << std::endl;
         return false;
     }
 
     // Create Project Folders
-    fs::create_directories(getProjectFolder(a_moleculeProject));
+    fs::create_directories(projectDirectory.path().c_str());
 
-    fs::create_directory(fmt::format("{0}/trajectories", getProjectFolder(a_moleculeProject)));
+    fs::create_directory(fmt::format("{0}/{1}", projectDirectory.path().c_str(), TRAJECTORIES_FOLDER_NAME));
 
     for (int i = 0; i < a_moleculeProject.NumTrajectories; i++)
-        fs::create_directory(fmt::format("{0}/trajectories/run-{1}", getProjectFolder(a_moleculeProject), i));
+        fs::create_directory(fmt::format("{0}/{1}/run-{2}", projectDirectory.path().c_str(), TRAJECTORIES_FOLDER_NAME, i));
 
     // Create Geometries if Needed
-    fs::create_directory(fmt::format("{0}/geometries", getProjectFolder(a_moleculeProject)));
+    fs::create_directory(fmt::format("{0}/{1}", projectDirectory.path().c_str(), GEOMETRIES_FOLDER_NAME));
 
+    std::string geometryFileNameBase = fmt::format("{0}/{1}/Geom", projectDirectory.path().c_str(), GEOMETRIES_FOLDER_NAME);
     if (a_moleculeProject.CreateGeometry) {
     for (int i = 0; i < a_moleculeProject.NumTrajectories; i++) {
-        std::ofstream geometryFile(fmt::format("{0}/geometries/Geom-{1}.txt", getProjectFolder(a_moleculeProject), i));
+        std::ofstream geometryFile(fmt::format("{0}-{1}", geometryFileNameBase, i));
         geometryFile.close();
     }}
     else
@@ -63,8 +59,8 @@ bool createProjectDirectories(MoleculeProject a_moleculeProject, bool a_restartP
 
         // Check if all Geometry files have been added
         for (int i = 0; i < a_moleculeProject.NumTrajectories; i++)
-            if (!fs::exists(fmt::format("{0}/geometries/Geom-{1}.txt", getProjectFolder(a_moleculeProject), i)))
-                std::cerr << fmt::format("ERROR: {0}/geometries/Geom-{1}.txt could not be found", getProjectFolder(a_moleculeProject), i) << std::endl;
+            if (!fs::exists(fmt::format("{0}-{1}", geometryFileNameBase, i)))
+                std::cerr << fmt::format("ERROR: {0}-{1} could not be found", geometryFileNameBase, i) << std::endl;
     }
 
     return true;
@@ -74,18 +70,20 @@ bool createProjectDirectories(MoleculeProject a_moleculeProject, bool a_restartP
 /// @return Whetehr the Project was Submitted to ARC
 bool runProjectARC(MoleculeProject a_moleculeProject)
 {
+    fs::directory_entry projectDirectory(fmt::format("{0}/{1}", projectsDirectory.path().c_str(), a_moleculeProject.ProjectName));
+
     // Check if Running on HPC Server
     char hostName[HOST_NAME_MAX];  gethostname(hostName, HOST_NAME_MAX);
     char userName[LOGIN_NAME_MAX]; getlogin_r(userName, LOGIN_NAME_MAX);
 
-    if (!std::regex_match(hostName, std::regex("login(1|2).arc(3|4).leeds.ac.uk")))
-        return false;
+    //if (!std::regex_match(hostName, std::regex("login(1|2).arc(3|4).leeds.ac.uk")))
+        //return false;
 
     // Ensure Computation Time is between Minimum (15min) and Maximum (48h)
     double maxHours = std::clamp(a_moleculeProject.MaxHours, 0.25, 48.0);
 
     // Write ARC Submission Script
-    std::ofstream scriptFile(fmt::format("{0}/ARC_Commands.sh", getProjectFolder(a_moleculeProject)));
+    std::ofstream scriptFile(fmt::format("{0}/ARC_Commands.sh", projectDirectory.path().c_str()));
 
     // ARC Setup Instructions
     scriptFile << "#$ -cwd -V" << '\n';
@@ -109,10 +107,15 @@ bool runProjectARC(MoleculeProject a_moleculeProject)
     scriptFile << "export PATH=\"$PATH:$QC/exe:$QC/bin\"" << '\n';
 
     // Enter the Project Folder
-    scriptFile << fmt::format("cd {0}", getProjectFolder(a_moleculeProject)) << '\n';
+    scriptFile << fmt::format("cd {0}", fs::canonical(projectDirectory).c_str()) << '\n';
+
+    std::cout << "Current Directory: " << fs::current_path().c_str() << std::endl;
+    std::cout << "Project Directory: " << fs::canonical(projectDirectory).c_str() << std::endl;
+
+    std::cout << "Relative: " << fs::relative(fs::current_path(), fs::canonical(projectDirectory)).c_str() << std::endl;
 
     // Call Program to run Computations
-    scriptFile << fmt::format("{0}/plasma-dissociation $SGE_TASK_ID list", fs::relative(fs::path(getProjectFolder(a_moleculeProject)), fs::current_path()).c_str()) << " ";
+    scriptFile << fmt::format("{0}/plasma-dissociation $SGE_TASK_ID list", fs::relative(fs::current_path(), projectDirectory).c_str()) << " ";
     scriptFile << fmt::format("--num_cpus {0}", a_moleculeProject.NumCPUs) << " ";
     scriptFile << fmt::format("{0} {1}", a_moleculeProject.NumStates, a_moleculeProject.NumBranches) << " ";
     scriptFile << fmt::format("{0} {1}", a_moleculeProject.NumTimesteps, a_moleculeProject.TimestepDuration) << " ";
@@ -145,7 +148,7 @@ int main(int argc, char *argv[])
             .flag();
         argumentParser.add_argument("-dir", "--projects_directory")
             .help("") // TODO: Add Description of Projects Directory Location
-            .default_value("DEFAULT_PROJECTS_FOLDER");
+            .default_value("./projects");
     }
 
     // Parse Arguments from Command Line
