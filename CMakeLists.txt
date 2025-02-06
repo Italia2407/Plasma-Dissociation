@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project("Plasma-Dissociation" LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # External Libraries
 add_subdirectory("libs/tomlplusplus")
@@ -25,7 +26,7 @@ target_link_libraries(qchem-management PRIVATE shared io-management)
 # TODO: Better Description
 add_library(shared INTERFACE)
 
-target_link_libraries(shared INTERFACE fmt::fmt)
+target_link_libraries(shared INTERFACE fmt::fmt "stdc++fs")
 target_compile_definitions(shared INTERFACE MAX_CORES=8)
 
 # Add CMake Sub-Directories
